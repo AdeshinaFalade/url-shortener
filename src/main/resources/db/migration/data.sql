@@ -1,0 +1,8 @@
+-- insert into users (name)
+-- values ('Shina');
+-- insert into users (name)
+-- values ('Tinu');
+-- insert into users (name)
+-- values ('Dayo');
+-- insert into users (name)
+-- values ('Mide')
