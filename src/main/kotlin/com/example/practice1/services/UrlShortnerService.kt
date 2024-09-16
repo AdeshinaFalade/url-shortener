@@ -1,9 +1,9 @@
-package com.example.practice1.url
+package com.example.practice1.services
 
 import com.example.practice1.UrlMapping
+import com.example.practice1.repositories.UrlMappingRepository
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
-import org.springframework.web.util.UriBuilder
 import java.time.LocalDateTime
 import java.util.*
 
@@ -13,8 +13,8 @@ class UrlShortenerService(private val urlMappingRepository: UrlMappingRepository
     private val baseUrl = "http://localhost:8080/url/"
     private val defaultExpiryDays = 30 // Default expiry in days
 
-    suspend fun shortenUrl(originalUrl: String, expiryDays: Int? = defaultExpiryDays): String {
-        val existingMapping = urlMappingRepository.findByOriginalUrl(originalUrl)
+    suspend fun shortenUrl(userId: Long, originalUrl: String, expiryDays: Int? = defaultExpiryDays): String {
+        val existingMapping = urlMappingRepository.findByOriginalUrl(originalUrl, userId)
         if (existingMapping != null) {
             return existingMapping.shortUrl
         }
@@ -25,13 +25,15 @@ class UrlShortenerService(private val urlMappingRepository: UrlMappingRepository
             id = UUID.randomUUID().toString(),
             originalUrl = originalUrl,
             shortUrl = baseUrl + shortUrl,
-            expiryDate = expiryDate
+            expiryDate = expiryDate,
+            userId = userId
         )
         urlMappingRepository.insertUrlMapping(
             urlMapping.id,
             urlMapping.originalUrl,
             urlMapping.shortUrl,
-            urlMapping.expiryDate
+            urlMapping.expiryDate,
+            userId = urlMapping.userId!!
         )
         return urlMapping.shortUrl
     }
@@ -55,4 +57,6 @@ class UrlShortenerService(private val urlMappingRepository: UrlMappingRepository
     }
 
     suspend fun getAllUrlMappings() = urlMappingRepository.findAll().toList()
+
+    suspend fun getUrlMappingsByUser(userId: Int) = urlMappingRepository.getUrlsByUserId(userId)?.toList()
 }

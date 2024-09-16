@@ -1,6 +1,7 @@
-package com.example.practice1.user
+package com.example.practice1.routes
 
-import com.example.practice1.UserRouteHandler
+import com.example.practice1.handlers.UserRouteHandler
+import com.example.practice1.repositories.UserRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.coRouter

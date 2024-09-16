@@ -1,5 +1,6 @@
-package com.example.practice1.url
+package com.example.practice1.services
 
+import com.example.practice1.repositories.UrlMappingRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
@@ -33,6 +34,7 @@ class UrlExpiryService(
             .filter { it.expiryDate?.isBefore(now) == true }.toList()
 
         expiredUrls.forEach { urlMapping ->
+            println("Deleted url: ${urlMapping.originalUrl}")
             urlMapping.id?.let { urlMappingRepository.deleteById(it) }
         }
     }

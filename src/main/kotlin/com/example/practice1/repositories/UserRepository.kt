@@ -1,4 +1,4 @@
-package com.example.practice1.user
+package com.example.practice1.repositories
 
 import com.example.practice1.User
 import org.springframework.data.r2dbc.repository.Query
@@ -23,4 +23,13 @@ interface UserRepository : CoroutineCrudRepository<User, Long> {
     """
     )
     suspend fun getAllUsers(@Param("startIndex") startIndex: Int, @Param("pageSize") pageSize: Int): List<User>
+
+    @Query(
+        """
+        SELECT * FROM users WHERE email ILIKE :email
+        LIMIT 1
+    """
+    )
+    suspend fun findByEmail(@Param("email") email: String): User?
+
 }

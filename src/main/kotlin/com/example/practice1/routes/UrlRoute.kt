@@ -1,8 +1,9 @@
-package com.example.practice1.url
+package com.example.practice1.routes
 
+import com.example.practice1.handlers.UrlHandler
+import com.example.practice1.services.UrlShortenerService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod.POST
 import org.springframework.web.reactive.function.server.coRouter
 
 @Configuration
@@ -12,15 +13,15 @@ class UrlRoute {
     fun urlHandler(urlShortenerService: UrlShortenerService) = UrlHandler(urlShortenerService)
 
     @Bean
-    fun routes(urlHandler: UrlHandler) = coRouter {
+    fun urlRoutes(urlHandler: UrlHandler) = coRouter {
         POST("url/shorten", urlHandler::shortenUrl)
 
         GET("url/{shortUrl}") {
             urlHandler.redirectToOriginal(it)
         }
-        
-        GET("url"){
-            urlHandler.getAllUrls()
+
+        GET("url") {
+            urlHandler.getAllUrls(it)
         }
     }
 

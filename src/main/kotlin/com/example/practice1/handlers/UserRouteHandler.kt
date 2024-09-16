@@ -1,6 +1,11 @@
-package com.example.practice1
+package com.example.practice1.handlers
 
-import com.example.practice1.user.UserRepository
+import com.example.practice1.CreateUserDto
+import com.example.practice1.User
+import com.example.practice1.repositories.UserRepository
+import io.jsonwebtoken.Claims
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -8,6 +13,10 @@ import org.springframework.web.reactive.function.server.*
 class UserRouteHandler(private val userRepository: UserRepository) {
     suspend fun getUsers(request: ServerRequest): ServerResponse {
         val name = request.queryParam("name").orElse(null)?.toString()
+        val claims = request.attribute("claims")
+            .orElseThrow { IllegalStateException("No claims found in request") } as Claims
+
+        val email = claims.subject
 
         return if (name != null) {
             userRepository.findByName(name)?.let { user ->
@@ -28,14 +37,29 @@ class UserRouteHandler(private val userRepository: UserRepository) {
 
     suspend fun getUserById(request: ServerRequest): ServerResponse {
         val id = request.pathVariable("id").toLong()
+        val claims = request.attribute("claims")
+            .orElseThrow { IllegalStateException("No claims found in request") } as Claims
+
+        val email = claims.subject
+
         return userRepository.findById(id)?.let { user ->
             ServerResponse.ok().bodyValueAndAwait(user)
         } ?: ServerResponse.notFound().buildAndAwait()
     }
 
     suspend fun createUser(request: ServerRequest): ServerResponse {
+        val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         val userDto = request.awaitBody<CreateUserDto>()
-        val user = User(null, userDto.name)
+        val encodedPassword = passwordEncoder.encode(userDto.password)
+        // Validate the userDto object
+        userDto.validate()?.let { errorMessage ->
+            return ServerResponse.badRequest().bodyValueAndAwait(errorMessage)
+        }
+        val userExists = userRepository.findByEmail(userDto.email!!) != null
+        if (userExists) {
+            ServerResponse.badRequest().bodyValueAndAwait("User with the provided email already exists.")
+        }
+        val user = User(null, name = userDto.name!!, email = userDto.email!!, password = encodedPassword)
         val savedUser = userRepository.save(user)
 
         val locationUri = request.uriBuilder()

@@ -22,3 +22,4 @@ CREATE TABLE IF NOT EXISTS url_mappings
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expiry_date TIMESTAMP
     );
+
